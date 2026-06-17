@@ -21,7 +21,7 @@ use crate::azure::credential::{
     ImdsManagedIdentityProvider, WorkloadIdentityOAuthProvider,
 };
 use crate::azure::{AzureCredential, AzureCredentialProvider, MicrosoftAzure, STORE};
-use crate::client::{HttpConnector, TokenCredentialProvider, http_connector};
+use crate::client::{CryptoProvider, HttpConnector, TokenCredentialProvider, http_connector};
 use crate::config::ConfigValue;
 use crate::{ClientConfigKey, ClientOptions, Result, RetryConfig, StaticCredentialProvider};
 use percent_encoding::percent_decode_str;
@@ -162,6 +162,8 @@ pub struct MicrosoftAzureBuilder {
     client_options: ClientOptions,
     /// Credentials
     credentials: Option<AzureCredentialProvider>,
+    /// The [`CryptoProvider`] to use
+    crypto: Option<Arc<dyn CryptoProvider>>,
     /// Skip signing requests
     skip_signature: ConfigValue<bool>,
     /// When set to true, fabric url scheme will be used
@@ -822,6 +824,12 @@ impl MicrosoftAzureBuilder {
         self
     }
 
+    /// The [`CryptoProvider`] to use
+    pub fn with_crypto_provider(mut self, provider: Arc<dyn CryptoProvider>) -> Self {
+        self.crypto = Some(provider);
+        self
+    }
+
     /// Set if the Azure emulator should be used (defaults to false)
     pub fn with_use_emulator(mut self, use_emulator: bool) -> Self {
         self.use_emulator = use_emulator.into();
@@ -1089,6 +1097,7 @@ impl MicrosoftAzureBuilder {
             client_options: self.client_options,
             service: storage_url,
             credentials: auth,
+            crypto: self.crypto,
         };
 
         let http_client = http.connect(&config.client_options)?;
