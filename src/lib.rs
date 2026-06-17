@@ -548,7 +548,7 @@
 //! | `aws-base` |  | S3 without `reqwest` or crypto; supply your own [`HttpConnector`] and [`client::CryptoProvider`]. |
 //! | `azure-base` |  | Azure without `reqwest` or crypto; supply your own [`HttpConnector`] and [`client::CryptoProvider`]. |
 //! | `gcp-base` |  | GCS without `reqwest` or crypto; supply your own [`HttpConnector`] and [`client::CryptoProvider`]. |
-//! | `http-base` |  | HTTP/WebDAV without `reqwest` or crypto; supply your own [`HttpConnector`] and [`client::CryptoProvider`]. |
+//! | `http-base` |  | HTTP/WebDAV without `reqwest`; supply your own [`HttpConnector`]. |
 //!
 //! ## Transport and crypto features
 //!
@@ -590,6 +590,12 @@
 //! object_store = { default-features = false, features = ["aws-base", "reqwest", "reqwest/rustls", "aws-lc-rs"] }
 //! ```
 //!
+//! S3 implementation + custom HTTP + `aws-lc-rs` signing; application chooses the aws-lc-rs backend:
+//! ```toml
+//! object_store = { default-features = false, features = ["aws-base", "aws-lc-rs"] }
+//! aws-lc-rs = { version = "1.15", default-features = false, features = ["aws-lc-sys"] }
+//! ```
+//!
 //! S3 implementation + `reqwest` with native TLS + `ring` signing (no `aws-lc-rs` in the dependency tree):
 //! ```toml
 //! object_store = { default-features = false, features = ["aws-base", "reqwest", "reqwest/native-tls", "ring"] }
@@ -608,6 +614,9 @@
 //! `*-base` feature flags, e.g. `aws-base`, and then enable the `ring` feature.
 //!
 //! If both `ring` and `aws-lc-rs` are enabled, `aws-lc-rs` is used by default.
+//!
+//! When enabling `aws-lc-rs` without `reqwest/rustls`, applications must also
+//! enable an aws-lc-rs backend feature.
 //!
 //! You can also implement a custom [`client::CryptoProvider`] to use your own cryptographic library.
 //!
